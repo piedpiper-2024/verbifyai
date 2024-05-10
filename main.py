@@ -1,15 +1,17 @@
 import tempfile
-import uvicorn
+import os
 from fastapi import FastAPI, UploadFile, HTTPException, Response
 from deployment.speech_inference import SpeechTranscriptionPipeline, ModelOptimization
 from fastapi.responses import FileResponse, JSONResponse, Response
+from dotenv import load_dotenv
+load_dotenv()
 
 app = FastAPI(debug=True)
 
-model_name = "openai/whisper-tiny"   # e.g., "KevinKibe/whisper-small-af"
-huggingface_read_token = "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"
+
 task = "transcribe"     
-                                    # either 'translate' or 'transcribe'
+huggingface_read_token = os.getenv("HUGGINGFACE_READ_TOKEN")
+model_name = os.getenv("MODEL_NAME")
 model_optimizer = ModelOptimization(model_name=model_name)
 model_optimizer.convert_model_to_optimized_format()
 model = model_optimizer.load_transcription_model()
