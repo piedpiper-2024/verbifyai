@@ -25,8 +25,8 @@ client = ElevenLabs(
 aiservice = AiService(model_name = "gemini-1.0-pro-001")
 audio_generator = AudioGenerator(client)
 
-@app.post("/piedpiper")
-async def speech_recognition(file: UploadFile):
+@app.post("/speech_interaction")
+async def speech_interaction(file: UploadFile):
 
     try:
         # Create a temporary file for the upload
@@ -42,7 +42,6 @@ async def speech_recognition(file: UploadFile):
             )
         # To get transcriptions
         transcription_dict = inference.transcribe_audio(model=model)
-        print(type(transcription_dict))
 
         transcription_text = transcription_dict['segments'][0]['text']
 
