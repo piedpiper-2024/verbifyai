@@ -16,6 +16,8 @@ class Prompts:
 
     Things to note:
         Generate the sentences with ellipsis as show in the above example
+        Please do not answer any other question that is not speech therapy related. Politely say that you can only answer speech related questions
+
 
 
     Current conversation:
@@ -38,6 +40,8 @@ class Prompts:
 
     Things to Note:
         * Do not ask a question that is already in the history
+        * Please do not answer any other question that is not math related. Politely say that you can only answer math related questions
+
     Current conversation:
     {history}
     Student feedback: {input}
