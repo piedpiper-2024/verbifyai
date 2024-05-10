@@ -1,5 +1,7 @@
 import tempfile
 import os
+import logging
+import time
 from fastapi import FastAPI, UploadFile, HTTPException, Response
 from deployment.speech_inference import SpeechTranscriptionPipeline, ModelOptimization
 from fastapi.responses import FileResponse, JSONResponse, Response
@@ -27,7 +29,8 @@ audio_generator = AudioGenerator(client)
 
 @app.post("/speech_interaction")
 async def speech_interaction(file: UploadFile):
-
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(format='%(asctime)s %(levelname)-8s %(message)s', filename='app.log', level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
     try:
         # Create a temporary file for the upload
         with tempfile.NamedTemporaryFile(suffix=".tmp", delete=False) as tmp_file:
@@ -35,23 +38,28 @@ async def speech_interaction(file: UploadFile):
             tmp_file_path = tmp_file.name
 
         # Initiate the transcription model
+        logger.info("Transcribing audio...")
+        start_time = time.time()
         inference = SpeechTranscriptionPipeline(
                 audio_file_path=tmp_file_path,
                 task=task,
                 huggingface_read_token=huggingface_read_token
             )
+        end_time = time.time()
+        duration = end_time - start_time
         # To get transcriptions
         transcription_dict = inference.transcribe_audio(model=model)
 
         transcription_text = transcription_dict['segments'][0]['text']
 
-
+        logger.info(f"Audio transcribed in {duration} second. Generating response from AI...")
         text_response = aiservice.text_generation(text = transcription_text, 
                                                   verbose = True)
-
+        logger.info("Converting response text to audio...")
         audio_generator.generate_audio(text = text_response, 
                                      filename= "response_audio.mp3")
         filename = f"./response_audio.mp3"
+        logger.info("Posting Audiofile...")
         return FileResponse(
             path=filename,
             media_type="application/octet-stream",
