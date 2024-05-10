@@ -4,7 +4,9 @@ from fastapi import FastAPI, UploadFile, HTTPException, Response
 from deployment.speech_inference import SpeechTranscriptionPipeline, ModelOptimization
 from fastapi.responses import FileResponse, JSONResponse, Response
 from dotenv import load_dotenv
+from services.aiservice import AiService
 from elevenlabs.client import ElevenLabs
+from voice_generator import AudioGenerator
 load_dotenv()
 
 app = FastAPI(debug=True)
@@ -20,6 +22,8 @@ model = model_optimizer.load_transcription_model()
 client = ElevenLabs(
     api_key=elleven_labs_api, 
     )
+aiservice = AiService(model_name = "gemini-1.0-pro-001")
+audio_generator = AudioGenerator(client)
 
 @app.post("/piedpiper")
 async def speech_recognition(file: UploadFile):
@@ -37,8 +41,24 @@ async def speech_recognition(file: UploadFile):
                 huggingface_read_token=huggingface_read_token
             )
         # To get transcriptions
-        transcription = inference.transcribe_audio(model=model)
-        return JSONResponse(content={"transcription": transcription})
+        transcription_dict = inference.transcribe_audio(model=model)
+        print(type(transcription_dict))
+
+        transcription_text = transcription_dict['segments'][0]['text']
+
+
+        text_response = aiservice.text_generation(text = transcription_text, 
+                                                  verbose = True)
+
+        audio_generator.generate_audio(text = text_response, 
+                                     filename= "response_audio.mp3")
+        filename = f"./response_audio.mp3"
+        return FileResponse(
+            path=filename,
+            media_type="application/octet-stream",
+            filename="subtitle.srt",
+            headers={"Content-Disposition": "attachment; filename=response_audio.mp3"}
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error transcribing audio: {e}")
 
