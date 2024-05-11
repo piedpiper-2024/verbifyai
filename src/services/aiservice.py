@@ -3,12 +3,18 @@ from langchain.memory import ConversationBufferMemory
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from helpers.prompts import Prompts
+from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from dotenv import load_dotenv
 
 class AiService:
     def __init__(self, model_name: str):
         load_dotenv() 
-        self.llm = ChatGoogleGenerativeAI(model=model_name,temperature=0.3)
+        self.llm = ChatGoogleGenerativeAI(model=model_name,temperature=0.3,safety_settings={
+                                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+                                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+                                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+                                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE
+                            } )
         self.math_prompt_template = Prompts.MATH_TUTOR_PROMPT_TEMPLATE
         self.speech_therapy_prompt_template = Prompts.SPEECH_THERAPY_PROMPT_TEMPLATE
 
