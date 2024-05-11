@@ -9,10 +9,17 @@ from dotenv import load_dotenv
 from services.aiservice import AiService
 from elevenlabs.client import ElevenLabs
 from voice_generator import AudioGenerator
+from fastapi.middleware.cors import CORSMiddleware
 load_dotenv()
 
 app = FastAPI(debug=True)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 task = "transcribe"     
 huggingface_read_token = os.getenv("HUGGINGFACE_READ_TOKEN")
